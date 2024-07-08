@@ -1,0 +1,16 @@
+.quill {
+  margin-top: 5px !important;
+}
+.ql-toolbar {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 5px 5px 0 0;
+}
+.ql-container {
+  border: 1px solid #e2e8f0 !important;
+  border-top: none !important;
+  border-radius: 0 0 5px 5px;
+}
+
+.ql-editor {
+  min-height: 200px;
+}

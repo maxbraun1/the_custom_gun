@@ -1,0 +1,21 @@
+#description h1 {
+  font-size: 2em;
+}
+
+#description h2 {
+  font-size: 1.5em;
+}
+
+#description h3 {
+  font-size: 1.17em;
+}
+
+#description ol {
+  list-style-type: decimal;
+  list-style-position: inside;
+}
+
+#description ul {
+  list-style-type: circle;
+  list-style-position: inside;
+}

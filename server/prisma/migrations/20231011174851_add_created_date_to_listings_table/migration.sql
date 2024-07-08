@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "listings" ADD COLUMN     "createdDate" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP;

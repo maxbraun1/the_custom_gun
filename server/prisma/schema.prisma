@@ -1,0 +1,283 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model users {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ref            String    @db.VarChar(255) @unique @default(cuid())
+  provider       String    @db.VarChar(255) @default("local")
+  email          String    @unique @db.VarChar(255)
+  verified       Boolean   @db.Boolean @default(false)
+  username       String?   @unique @db.VarChar(255)
+  password       String?   @db.VarChar(255)
+  account_created_date   DateTime  @default(now()) @db.Timestamp(6)
+  last_sign_in   DateTime? @db.Timestamp(6)
+  first_name     String?   @db.VarChar(255)
+  last_name      String?   @db.VarChar(255)
+  company        String?   @db.VarChar(255)
+  billing_name String? @db.VarChar(255)
+  billing_address_1 String? @db.VarChar(255)
+  billing_address_2 String? @db.VarChar(255)
+  billing_city   String?   @db.VarChar(255)
+  billing_state  String?   @db.VarChar(255)
+  billing_zip    String?   @db.VarChar(10)
+  date_of_birth  DateTime? @db.Date
+  gender         String?   @db.VarChar(10)
+  account_status String    @db.VarChar(20) @default("pending")
+  role           String    @db.VarChar(20) @default("user")
+  google_id      String?   @db.VarChar(225)
+  rating         Decimal   @db.Decimal(2,1) @default(0.0)
+  listings listings[]
+  notifications notifications[]
+  verification email_verifications?
+  bids bids[]
+  orders_as_buyer orders[] @relation("buyer")
+  orders_as_seller orders[] @relation("seller")
+  watches watches[]
+  password_reset_codes password_reset_codes[]
+  feedback_as_buyer feedback[] @relation("feedback_as_buyer")
+  feedback_as_seller feedback[] @relation("feedback_as_seller")
+  offers_as_seller offers[] @relation("offer_seller")
+  offers_as_buyer offers[] @relation("offer_buyer")
+  default_ffl_id String? @db.Uuid
+  default_ffl ffls? @relation(fields: [default_ffl_id], references: [id])
+}
+
+model finishes {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  value          String    @unique @db.VarChar(255)
+  display        String    @unique @db.VarChar(255)
+  listings_as_frame_finish listings[] @relation("frame_finish")
+  listings_as_secondary_finish listings[] @relation("secondary_finish")
+}
+
+model brands {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  value          String    @unique @db.VarChar(255)
+  display        String    @unique @db.VarChar(255)
+  listings listings[]
+}
+
+model calibers {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  value          String    @unique @db.VarChar(255)
+  display        String    @unique @db.VarChar(255)
+  listings listings[]
+}
+
+model listing_images {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  index Int? @db.Integer
+  uploaded_date DateTime @default(now()) @db.Timestamp(6)
+  url String @db.Text
+  listing_id String? @db.Uuid
+  listing listings? @relation("images", fields: [listing_id], references: [id])
+  thumbnail_for_id String? @unique @db.Uuid
+  thumbnail_for listings? @relation("thumbnail", fields: [thumbnail_for_id], references: [id])
+}
+
+model listings {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_date DateTime @default(now()) @db.Timestamp(6)
+  end_date DateTime @default(now()) @db.Timestamp(6)
+  ref String @unique @db.VarChar(255) @default(cuid())
+  user users @relation(fields: [user_id], references: [id])
+  user_id String @db.Uuid
+  status String @db.VarChar(255) @default("draft")
+  current_bid Decimal @db.Decimal(12,2) @default(0.00)
+  bid_count Int @db.Integer @default(0)
+  reserve_met Boolean @db.Boolean @default(false)
+  has_reserve Boolean @db.Boolean @default(false)
+  bids bids[]
+  orders orders[]
+  watches watches[]
+  offers offers[]
+
+  // description
+  title String @db.Text
+  description String @db.Text
+  condition String @db.VarChar(255)
+  upc String? @db.VarChar(255)
+  sku String? @db.VarChar(255)
+  serial_no String? @db.VarChar(255)
+  item_type String @db.VarChar(255)
+  is_engraved Boolean @db.Boolean @default(false)
+  frame_finish_id String @db.Uuid
+  frame_finish finishes? @relation("frame_finish", fields: [frame_finish_id], references: [id])
+  secondary_finish_id String? @db.Uuid
+  secondary_finish finishes? @relation("secondary_finish", fields: [secondary_finish_id], references: [id])
+  brand_id String? @db.Uuid
+  brand brands? @relation(fields: [brand_id], references: [id])
+  caliber_id String? @db.Uuid
+  caliber calibers? @relation(fields: [caliber_id], references: [id])
+  customized_by String? @db.VarChar(255)
+
+  // images
+  images listing_images[] @relation("images")
+  thumbnail listing_images? @relation("thumbnail")
+
+  // options
+  listing_type String @db.VarChar(255)
+  duration Int @db.Integer @default(3)
+  price Decimal? @db.Decimal(12,2)
+  quantity Int @db.Integer @default(1)
+  accept_offers Boolean? @db.Boolean @default(false)
+  starting_bid Decimal? @db.Decimal(12,2)
+  reserve_price Decimal? @db.Decimal(12,2)
+  buy_now_price Decimal? @db.Decimal(12,2)
+
+  // payment & shipping
+  is_free_shipping Boolean @db.Boolean @default(false)
+  shipping_charge Decimal @db.Decimal(12,2) @default(0)
+  seller_state String @db.VarChar(2)
+}
+
+model notifications {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_date DateTime @default(now()) @db.Timestamp(6)
+  user users @relation(fields: [user_id], references: [id])
+  user_id String @db.Uuid
+  status String @db.VarChar(255) @default("unread") // "unread" "read"
+  title String @db.Text
+  description String @db.Text
+  reference String? @db.Text
+  urgent Boolean? @db.Boolean @default(false)
+}
+
+model email_verifications {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code Int @db.Integer()
+  user users @relation(fields: [user_id], references: [id])
+  user_id String @db.Uuid @unique
+  date DateTime @default(now()) @db.Timestamp(6)
+}
+
+model bids {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  date DateTime @default(now()) @db.Timestamp(6)
+  listing listings @relation(fields: [listing_id], references: [id])
+  listing_id String @db.Uuid
+  user users @relation(fields: [user_id], references: [id])
+  user_id String @db.Uuid
+  amount Decimal @db.Decimal(12,2)
+}
+
+model orders{
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  number Int @default(autoincrement()) @unique
+  ship_to_ffl_id String? @db.Uuid
+  ship_to_ffl ffls? @relation(fields: [ship_to_ffl_id], references: [id])
+  date DateTime @default(now()) @db.Timestamp(6)
+  status String @db.VarChar(100) @default("pending")
+  price_per_item Decimal @db.Decimal(12,2)
+  subtotal Decimal? @db.Decimal(12,2)
+  total Decimal @db.Decimal(12,2)
+  fees Decimal @db.Decimal(12,2)
+  shipping_price Decimal @db.Decimal(12,2)
+  quantity Int @db.Integer @default(1)
+  is_paid Boolean @default(false) @db.Boolean
+  paid_date DateTime? @db.Timestamp(6)
+  is_shipped Boolean @default(false) @db.Boolean
+  shipped_date DateTime? @db.Timestamp(6)
+  is_received Boolean @default(false) @db.Boolean
+  received_date DateTime? @db.Timestamp(6)
+  tracking_number String? @db.VarChar(255)
+  listing listings @relation(fields: [listing_id], references: [id])
+  listing_id String @db.Uuid
+  buyer users @relation("buyer", fields: [buyer_user_id], references: [id])
+  buyer_user_id String @db.Uuid
+  seller users @relation("seller", fields: [seller_user_id], references: [id])
+  seller_user_id String @db.Uuid
+  billing_name String? @db.Text
+  billing_address_1 String? @db.Text
+  billing_address_2 String? @db.Text
+  billing_city String? @db.Text
+  billing_state String? @db.VarChar(2)
+  billing_zip String? @db.VarChar(5)
+  checkout_completed Boolean @db.Boolean @default(false)
+  feedback_submitted Boolean @db.Boolean @default(false)
+  feedback feedback?
+}
+
+model watches{
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  date DateTime @default(now()) @db.Timestamp(6)
+  listing listings @relation(fields: [listing_id], references: [id])
+  listing_id String @db.Uuid
+  user users @relation(fields: [user_id], references: [id])
+  user_id String @db.Uuid
+}
+
+model ffls{
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  LIC_FULL String @db.VarChar(255) @unique
+  LIC_REGN String @db.VarChar(255)
+  LIC_DIST String @db.VarChar(255)
+  LIC_CNTY String @db.VarChar(255)
+  LIC_TYPE String @db.VarChar(255)
+  LIC_XPRDTE String @db.VarChar(255)
+  LIC_SEQN String @db.VarChar(255)
+  LICENSE_NAME String? @db.VarChar(255)
+  BUSINESS_NAME String? @db.VarChar(255)
+  PREMISE_STREET String? @db.VarChar(255)
+  PREMISE_CITY String? @db.VarChar(255)
+  PREMISE_STATE String? @db.VarChar(255)
+  PREMISE_ZIP_CODE String? @db.VarChar(255)
+  MAIL_STREET String? @db.VarChar(255)
+  MAIL_CITY String? @db.VarChar(255)
+  MAIL_STATE String? @db.VarChar(255)
+  MAIL_ZIP_CODE String? @db.VarChar(255)
+  VOICE_PHONE String? @db.VarChar(255)
+  orders orders []
+  users users []
+}
+
+model feedback{
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  date DateTime @default(now()) @db.Timestamp(6)
+  order orders @relation(fields: [order_id], references: [id])
+  order_id String @db.Uuid @unique
+  seller users @relation("feedback_as_buyer", fields: [seller_id], references: [id])
+  seller_id String @db.Uuid
+  buyer users @relation("feedback_as_seller", fields: [buyer_id], references: [id])
+  buyer_id String @db.Uuid
+  score Int @db.Integer
+  message String @db.Text
+}
+
+model support{
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  date DateTime @default(now()) @db.Timestamp(2)
+  type String @db.VarChar(255)
+  email String @db.VarChar(255)
+  subject String @db.VarChar(255)
+  message String @db.Text
+}
+
+model offers{
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  date DateTime @default(now()) @db.Timestamp(6)
+  listing listings @relation(fields: [listing_id], references: [id])
+  listing_id String @db.Uuid
+  seller users @relation("offer_seller", fields: [seller_id], references: [id])
+  seller_id String @db.Uuid
+  buyer users @relation("offer_buyer", fields: [buyer_id], references: [id])
+  buyer_id String @db.Uuid
+  amount Decimal @db.Decimal(12,2)
+  quantity Int @db.Integer @default(1)
+  accepted Boolean? @db.Boolean
+}
+
+model password_reset_codes{
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  date DateTime @default(now()) @db.Timestamp(6)
+  user users @relation(fields: [user_id], references: [id])
+  user_id String @db.Uuid
+}
