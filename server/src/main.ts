@@ -22,13 +22,13 @@ async function bootstrap() {
   });
 
   // Initialize redis client.
-  let redisClient = createClient({
-    url: `redis://${process.env.REDIS_USER}:${process.env.REDIS_PASSWORD}@redis-17647.c93.us-east-1-3.ec2.cloud.redislabs.com:17647`,
+  const redisClient = createClient({
+    url: `redis://${process.env.REDIS_USER}:${process.env.REDIS_PASSWORD}@redis-10902.c281.us-east-1-2.ec2.redns.redis-cloud.com:10902`,
   });
   redisClient.connect().catch(console.error);
 
   // Initialize Redis store.
-  let redisStore = new RedisStore({
+  const redisStore = new RedisStore({
     client: redisClient,
     prefix: 'sess:',
   });
