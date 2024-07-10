@@ -105,7 +105,7 @@ export default function Summary({
                 <span className="font-semibold">Seller: </span>
                 <Link
                   className="text-blue-800"
-                  href={"/users/" + listing.user.ref}
+                  href={"/users/" + listing.user.username}
                 >
                   {listing.user.username}
                 </Link>
