@@ -132,7 +132,7 @@ export class ListingsService {
 
     let description = sanitize(listing.description);
 
-    let strippedDescription = striptags(description);
+    const strippedDescription = striptags(description);
 
     if (strippedDescription === '')
       throw new BadRequestException('Description cannot be empty.');
@@ -225,7 +225,6 @@ export class ListingsService {
         },
       })
       .then((result) => {
-        console.log(result.id);
         return { id: result.id, url: url };
       })
       .catch((err) => {
@@ -267,8 +266,6 @@ export class ListingsService {
         console.log(err);
         throw new InternalServerErrorException();
       });
-
-    console.log(listings);
 
     const count = await this.prisma.listings
       .count({
@@ -354,7 +351,7 @@ export class ListingsService {
     const listing = await this.prisma.listings.findFirst({ where: { ref } });
     if (listing.user_id !== user_id) throw new UnauthorizedException();
 
-    const result = await this.prisma.listings.update({
+    await this.prisma.listings.update({
       where: { ref },
       data: { status: 'ended', end_date: new Date() },
     });
@@ -492,19 +489,19 @@ export class ListingsService {
     if (!per) per = 10;
 
     // determine listing type to sort by
-    let listing_typeClause =
+    const listing_typeClause =
       listing_type === 'any' || !listing_type
         ? {}
         : { listing_type: listing_type };
 
-    let itemConditionClause =
+    const itemConditionClause =
       condition === 'any' || !condition ? {} : { condition: condition };
 
     // determine primary finish to sort by
     let frameFinishClause: object;
 
     // determine item type to sort by
-    let itemTypeClause =
+    const itemTypeClause =
       item_type === 'any' || !item_type ? {} : { item_type: item_type };
 
     // determine frame finish to sort by

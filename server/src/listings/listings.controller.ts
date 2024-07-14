@@ -62,7 +62,6 @@ export class ListingsController {
     const listings = response.listings.map(
       (listing) => new ListingEntity(listing),
     );
-    console.log(listings);
     return { listings, count: response.count };
   }
 
@@ -77,7 +76,6 @@ export class ListingsController {
   @UseGuards(AuthenticatedGuard)
   // TODO: Create DTO and validation for incoming listing data
   async createListing(@Body() body, @Req() request) {
-    console.log(body);
     const listingData = await this.listingsService.createListing(
       body,
       request.user.id,
@@ -116,13 +114,12 @@ export class ListingsController {
 
   @Get('latest')
   async getLatestListings() {
-    let listings = await this.listingsService.getLatestListings();
+    const listings = await this.listingsService.getLatestListings();
     return listings.map((listing) => new ListingEntity(listing));
   }
 
   @Get('search')
   async searchListings(@Query() query: SearchListingsDTO) {
-    console.log(query);
     return await this.listingsService.searchListings(
       query.term,
       Number(query.per),

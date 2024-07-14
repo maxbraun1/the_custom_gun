@@ -88,10 +88,10 @@ export function LogInForm() {
           window.location.replace("/account");
         }
       })
-      .catch((error: AxiosError) => {
+      .catch((error: Error | AxiosError) => {
         setLoading(false);
         console.log(error);
-        setError(error.message);
+        setError("Incorrect login credentials.");
       });
   };
 
